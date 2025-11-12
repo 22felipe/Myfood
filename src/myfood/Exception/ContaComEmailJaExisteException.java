@@ -6,7 +6,4 @@ public class ContaComEmailJaExisteException extends RuntimeException {
         super("Conta com esse email ja existe");
     }
 
-    public ContaComEmailJaExisteException(String mensagem) {
-        super(mensagem);
-    }
 }

@@ -43,8 +43,5 @@ public class Facade {
     public void encerrarSistema() {
         //limpar dados antes de sair
         sistema.zerarSistema();
-
-        // Finaliza o programa
-        System.exit(0);
     }
 }
