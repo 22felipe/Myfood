@@ -4,6 +4,8 @@ public class DonoDeEmpresa extends Usuario{
 
     private String cpf;
 
+    public DonoDeEmpresa(){}
+
     public DonoDeEmpresa(String nome, String email, String senha, String endereco, String cpf) {
         super(nome, email, senha, endereco);
         this.cpf=  cpf;
@@ -20,7 +22,8 @@ public class DonoDeEmpresa extends Usuario{
     }
 
 
-    //Getters
+    //Get e set
     public String getCpf() { return cpf; }
+    public void setCpf(String cpf) { this.cpf = cpf; }
 
 }

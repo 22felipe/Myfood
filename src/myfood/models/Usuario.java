@@ -12,6 +12,8 @@ public abstract class Usuario {
     protected String senha;
     protected String endereco;
 
+    public Usuario() {}
+
     public Usuario(String nome, String email, String senha, String endereco) {
         this.id = contadorId++;
         this.nome = nome;
@@ -32,6 +34,14 @@ public abstract class Usuario {
         }
     }
 
+    //Setters
+    public void setId(int id) { this.id = id; }
+    public void setNome(String nome) { this.nome = nome; }
+    public void setEmail(String email) { this.email = email; }
+    public void setSenha(String senha) { this.senha = senha; }
+    public void setEndereco(String endereco) { this.endereco = endereco; }
+
+    //Getters
     public int getId() { return id; }
     public String getNome() { return nome; }
     public String getEmail() { return email; }

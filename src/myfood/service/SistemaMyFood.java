@@ -7,7 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SistemaMyFood {
-    private List<Usuario> usuarios = new ArrayList<>();
+    private List<Usuario> usuarios;
+
+    public SistemaMyFood() {
+        this.usuarios = Persistencia.carregar(); // 👈 carrega dados salvos
+    }
 
     // ---------------------------- testes 1_1.txt -----------------------//
 
@@ -68,6 +72,9 @@ public class SistemaMyFood {
 
         // Adiciona o usuário à lista
         usuarios.add(usuario);
+
+        //Salvar novo usuario
+        Persistencia.salvar(usuarios);
     }
 
     //Retorna o atributo descrito em "nome" do usuario com base em seu "id"
@@ -87,7 +94,7 @@ public class SistemaMyFood {
     public int login(String email, String senha) {
 
         for (Usuario u : usuarios) {
-            if (u.getEmail().equalsIgnoreCase(email)) {
+            if (u.getEmail() != null && u.getEmail().equalsIgnoreCase(email)) {
                 if (u.getAtributo("senha").equals(senha)) {
                     return u.getId(); // Login válido
                 }
@@ -96,6 +103,11 @@ public class SistemaMyFood {
 
         throw new LoginInvalidoException();
 
+    }
+
+    //Metodo para o encerrarSistema
+    public void encerrarSistema() {
+        Persistencia.salvar(usuarios);
     }
 
 

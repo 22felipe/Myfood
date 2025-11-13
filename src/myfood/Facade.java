@@ -10,7 +10,7 @@ public class Facade {
     private SistemaMyFood sistema = new SistemaMyFood();
 
 
-    // ---------------------------- testes 1_1.txt -----------------------//
+    // ---------------------------- testes 1_1.txt e 1_2 txt -----------------------//
 
     //Limpa os dados do sistema
     public void zerarSistema() {
@@ -41,7 +41,7 @@ public class Facade {
 
     //Finaliza a execução do programa
     public void encerrarSistema() {
-        //limpar dados antes de sair
-        sistema.zerarSistema();
+        sistema.encerrarSistema();
     }
+
 }
