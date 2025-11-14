@@ -1,4 +1,4 @@
-package myfood.models;
+package myfood.models.usuarios;
 
 import myfood.Exception.AtributoInvalidoException;
 
@@ -30,7 +30,7 @@ public abstract class Usuario {
             case "email": return email;
             case "senha": return senha;
             case "endereco": return endereco;
-            default: throw new AtributoInvalidoException(nomeAtributo);
+            default: throw new AtributoInvalidoException();
         }
     }
 

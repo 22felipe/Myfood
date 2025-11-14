@@ -1,6 +1,6 @@
-package myfood.models;
+package myfood.models.usuarios;
 
-public class Cliente extends Usuario{
+public class Cliente extends Usuario {
 
 
     public Cliente() {}

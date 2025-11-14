@@ -1,8 +1,8 @@
 package myfood;
 
 
-import myfood.models.Cliente;
-import myfood.models.DonoDeEmpresa;
+import myfood.models.usuarios.Cliente;
+import myfood.models.usuarios.DonoDeEmpresa;
 import myfood.service.SistemaMyFood;
 
 public class Facade {
@@ -42,6 +42,24 @@ public class Facade {
     //Finaliza a execução do programa
     public void encerrarSistema() {
         sistema.encerrarSistema();
+    }
+
+    // ---------------------------- testes 2_1.txt e 2_2 txt -----------------------//
+
+    public int criarEmpresa(String tipoEmpresa, int dono, String nome, String endereco, String tipoCozinha){
+        return sistema.criarEmpresa(tipoEmpresa, dono, nome, endereco, tipoCozinha);
+    }
+
+    public String  getEmpresasDoUsuario (int idDono){
+        return sistema.getEmpresasDoUsuario(idDono);
+    }
+
+    public int getIdEmpresa (int idDono, String nome, int indice){
+        return sistema.getIdEmpresa(idDono, nome, indice);
+    }
+
+    public String getAtributoEmpresa (int empresa, String atributo){
+        return sistema.getAtributoEmpresa(empresa, atributo);
     }
 
 }

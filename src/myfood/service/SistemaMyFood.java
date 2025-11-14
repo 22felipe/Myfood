@@ -1,24 +1,36 @@
 package myfood.service;
 
 import myfood.Exception.*;
-import myfood.models.DonoDeEmpresa;
-import myfood.models.Usuario;
+import myfood.models.empresas.Empresa;
+import myfood.models.empresas.Restaurante;
+import myfood.models.usuarios.DonoDeEmpresa;
+import myfood.models.usuarios.Usuario;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SistemaMyFood {
     private List<Usuario> usuarios;
+    private List<Empresa> empresas = new ArrayList<>();
 
     public SistemaMyFood() {
-        this.usuarios = Persistencia.carregar(); // 👈 carrega dados salvos
+        this.usuarios = Persistencia.carregar(); // carrega dados salvos
     }
 
-    // ---------------------------- testes 1_1.txt -----------------------//
+    //Metodo para o encerrarSistema
+    public void encerrarSistema() {
+        Persistencia.salvar(usuarios);
+    }
 
     //apaga os dados dos usuario
     public void zerarSistema() {
         usuarios.clear();
     }
+
+
+    // ---------------------------- testes 1_1.txt e 1_2.txt -----------------------//
+
 
     //cadastra um novo usuario
     public void criarUsuario(Usuario usuario) {
@@ -105,10 +117,197 @@ public class SistemaMyFood {
 
     }
 
-    //Metodo para o encerrarSistema
-    public void encerrarSistema() {
+
+    // ---------------------------- testes 2_1.txt e 2_2.txt -----------------------//
+
+    public int criarEmpresa(String tipoEmpresa, int donoId, String nome, String endereco, String tipoCozinha) {
+
+        // 1 — Verificar se dono existe
+        Usuario dono = null;
+        for (Usuario u : usuarios) {
+            if (u.getId() == donoId) {
+                dono = u;
+                break;
+            }
+        }
+        if (dono == null) throw new UsuarioNaoEncontradoException();
+
+        // 2 — Verificar se é DonoDeEmpresa
+        if (!(dono instanceof DonoDeEmpresa)) {
+            throw new UsuarioNaoPodeCriarEmpresaException();
+        }
+
+        // 3 — Regra: não pode existir MESMO NOME para donos diferentes
+        for (Empresa e : empresas) {
+            if (e.getNome().equalsIgnoreCase(nome)) {
+                if (e.getDonoId() != donoId) {
+                    throw new EmpresaComEsseNomeJaExisteException();
+                }
+            }
+        }
+
+        // 4 — Regra: mesmo dono não pode cadastrar mesmo nome + mesmo endereço
+        for (Empresa e : empresas) {
+            if (e.getDonoId() == donoId &&
+                    e.getNome().equalsIgnoreCase(nome) &&
+                    e.getEndereco().equalsIgnoreCase(endereco)) {
+
+                throw new ProibidoCadastrarDuasEmpresasMesmoNomeLocalException();
+            }
+        }
+
+        // 5 — Criar a empresa de acordo com o tipo
+        Empresa nova = null;
+
+        //Trabalhei somente com o tipo restaurante, como é pedido nos testes
+        if (tipoEmpresa.equalsIgnoreCase("restaurante")) {
+            nova = new Restaurante(nome, endereco, donoId, tipoCozinha);
+        } else {
+            throw new TipoEmpresaInvalidoException();
+        }
+
+        empresas.add(nova);
+
+        ((DonoDeEmpresa) dono).adicionarEmpresa(nova);
+
         Persistencia.salvar(usuarios);
+
+        return nova.getId();
     }
 
 
+    public String getEmpresasDoUsuario(int idDono) {
+
+        // Verificar se o usuário existe e é dono
+        Usuario u = null;
+
+        for (Usuario usuario : usuarios) {
+            if (usuario.getId() == idDono) {
+                u = usuario;
+                break;
+            }
+        }
+
+        if (u == null) {
+            throw new UsuarioNaoEncontradoException();
+        }
+
+        if (!(u instanceof DonoDeEmpresa)) {
+            throw new UsuarioNaoPodeCriarEmpresaException();
+        }
+
+        // Coletar empresas do dono
+        StringBuilder sb = new StringBuilder();
+        sb.append("{[");
+
+        boolean first = true;
+        for (Empresa e : empresas) {
+            if (e.getDonoId() == idDono) {
+
+                if (!first) {
+                    sb.append(", ");
+                }
+                first = false;
+
+                sb.append("[")
+                        .append(e.getNome())
+                        .append(", ")
+                        .append(e.getEndereco())
+                        .append("]");
+            }
+        }
+
+        sb.append("]}");
+
+        return sb.toString();
+    }
+
+    public int getIdEmpresa(int idDono, String nome, int indice) {
+
+        // Validações do nome
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new NomeInvalidoException();
+        }
+
+        // Validações do índice
+        if (indice < 0) {
+            throw new IndiceInvalidoException();
+        }
+
+        //  busca o dono
+        Usuario user = null;
+        for (Usuario u : usuarios) {
+            if (u.getId() == idDono) { // Compara o ID do usuário com o ID do dono fornecido
+                user = u;
+                break;
+            }
+        }
+
+        if (user == null) {
+            throw new UsuarioNaoEncontradoException();
+        }
+
+        if (!(user instanceof DonoDeEmpresa)) {
+            throw new UsuarioNaoEoDonoException();
+        }
+
+        DonoDeEmpresa dono = (DonoDeEmpresa) user;
+
+        // obtém todas as empresas do dono com o mesmo nome
+        List<Empresa> empresasComNome = dono.getEmpresas().stream()
+                .filter(e -> e.getNome().equals(nome))
+                .collect(Collectors.toList());
+
+        // se nenhuma empresa com o nome existir
+        if (empresasComNome.isEmpty()) {
+            throw new NaoExisteEmpresaComEsseNomeException();
+        }
+
+        // se o índice solicitado excede o total encontrado
+        if (indice >= empresasComNome.size()) {
+            throw new IndiceMaiorQueOEsperadoException();
+        }
+
+        // --- retorna o ID correto ---
+        return empresasComNome.get(indice).getId();
+    }
+
+    public String getAtributoEmpresa (int empresaId, String atributo){
+
+
+        //Checo se a empresa existe
+        Empresa empresa = null;
+        for (Empresa e : empresas) {
+            if (e.getId() == empresaId) {
+                empresa = e;
+                break;
+            }
+        }
+
+        if (empresa == null) {
+            throw new EmpresaNaoCadastradaException();
+        }
+
+        //Checo se o atributo eh valido
+        if (atributo == null || atributo.trim().isEmpty()) {
+            throw new AtributoInvalidoException();
+        }
+
+        // TRATAMENTO ESPECIAL PARA O ATRIBUTO "DONO" (retornar o nome)
+        if (atributo.equalsIgnoreCase("dono")) {
+
+            // Buscar o nome do dono usando o id
+            for (Usuario u : usuarios) {
+                if (u.getId() == empresa.getDonoId()) {
+                    return u.getAtributo("nome"); // Retorna o nome do Dono
+                }
+            }
+            // Se o Dono não for encontrado
+            throw new UsuarioNaoEncontradoException();
+        }
+
+
+        // Retorna o atributo usando a função da Empresa para os demais casos
+        return empresa.getAtributo(atributo);
+    }
 }
