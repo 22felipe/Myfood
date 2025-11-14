@@ -62,4 +62,24 @@ public class Facade {
         return sistema.getAtributoEmpresa(empresa, atributo);
     }
 
+
+    // ---------------------------- testes 3_1.txt e 3_2.txt -----------------------//
+
+    public int criarProduto(int empresa, String nome, float valor, String categoria){
+        return sistema.criarProduto(empresa, nome, valor, categoria);
+    }
+
+    public String getProduto(String  nome, int empresa, String atributo){
+        return sistema.getProduto(nome, empresa, atributo);
+    }
+
+    public void editarProduto(int produto, String nome, float valor, String categoria){
+        sistema.editarProduto(produto, nome, valor, categoria);
+    }
+
+    public String listarProdutos(int empresa){
+        return sistema.listarProdutos(empresa);
+    }
+
+
 }

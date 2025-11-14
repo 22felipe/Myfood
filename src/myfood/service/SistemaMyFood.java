@@ -1,6 +1,7 @@
 package myfood.service;
 
 import myfood.Exception.*;
+import myfood.models.Produtos;
 import myfood.models.empresas.Empresa;
 import myfood.models.empresas.Restaurante;
 import myfood.models.usuarios.DonoDeEmpresa;
@@ -192,6 +193,7 @@ public class SistemaMyFood {
         return nova.getId();
     }
 
+    //retorna todas as empresas de um usuario cujo o Id eh "idDono"
     public String getEmpresasDoUsuario(int idDono) {
 
         // Verifica se o usuário existe
@@ -238,7 +240,7 @@ public class SistemaMyFood {
         return sb.toString();
     }
 
-
+    //retorna o id da empresa cujo o dono tem o id "idDono" e se chama "nome"
     public int getIdEmpresa(int idDono, String nome, int indice) {
 
         // Validações do nome
@@ -289,6 +291,7 @@ public class SistemaMyFood {
         return empresasComNome.get(indice).getId();
     }
 
+    //retorna o atributo "atributo" da empresa cujo o Id eh "empresaId
     public String getAtributoEmpresa (int empresaId, String atributo){
 
 
@@ -327,4 +330,230 @@ public class SistemaMyFood {
         // Retorna o atributo usando a função da Empresa para os demais casos
         return empresa.getAtributo(atributo);
     }
+
+
+    // ---------------------------- testes 3_1.txt e 3_2.txt -----------------------//
+
+    //cria um produto para uma empresa
+    public int criarProduto(int empresaId, String nome, float valor, String categoria){
+
+        //checa se o nome é valido
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new NomeInvalidoException();
+        }
+
+        //Checa se o valor do produto eh valido
+        if (valor <= 0) {
+            throw new ValorInvalidoException();
+        }
+
+        //checa se a categoria eh valido
+        if (categoria == null || categoria.trim().isEmpty()) {
+            throw new CategoriaInvalidoExpetion();
+        }
+
+        //checa se a empresa aonde o produto vai ser salva existe
+        Empresa empresa = null;
+        for (Empresa e : empresas) {
+            if (e.getId() == empresaId) {
+                empresa = e;
+                break;
+            }
+        }
+
+        if (empresa == null) {
+            throw new EmpresaNaoCadastradaException();
+        }
+
+        // Verifica se a empresa é um Restaurante
+        if (!(empresa instanceof Restaurante)) {
+            throw new TipoEmpresaInvalidoException();
+        }
+
+        Restaurante restaurante = (Restaurante) empresa;
+
+        //Verifica se ja existe um produto com esse nome nessa empresa
+        for (Produtos p : restaurante.getProdutos()) {
+            if (p.getNome().equalsIgnoreCase(nome)) {
+                throw new ProdutoComEsseNomeJaExisteException();
+            }
+        }
+
+        Produtos novoProduto = new Produtos(nome, valor, categoria);
+        restaurante.adicionarProduto(novoProduto);
+
+        //Salvar persistência (após adicionar o produto)
+        Persistencia.salvar(usuarios, empresas);
+
+        return novoProduto.getId();
+    }
+
+    //retorna o produto, apartir do seu nome, da empresa cujo o Id eh "empresaId"
+    public String getProduto(String nome, int empresaId, String atributo) {
+
+        //Checa se a empresa existe
+        Empresa empresa = null;
+        for (Empresa e : empresas) {
+            if (e.getId() == empresaId) {
+                empresa = e;
+                break;
+            }
+        }
+
+        if (empresa == null) {
+            throw new EmpresaNaoCadastradaException();
+        }
+
+        // Verifica se a empresa é um Restaurante
+        if (!(empresa instanceof Restaurante)) {
+            throw new TipoEmpresaInvalidoException();
+        }
+
+        Restaurante restaurante = (Restaurante) empresa;
+
+        // Busca o produto pelo nome
+        Produtos produtoEncontrado = null;
+        for (Produtos p : restaurante.getProdutos()) {
+            if (p.getNome().equals(nome)) {
+                produtoEncontrado = p;
+                break;
+            }
+        }
+
+        // Checa se o produto foi encontrado
+        if (produtoEncontrado == null) {
+            throw new ProdutoNaoEncontradoException();
+        }
+
+        // Retorna o atributo
+        try {
+            // TRATAMENTO ESPECIAL PARA O ATRIBUTO "EMPRESA"
+            if (atributo.equalsIgnoreCase("empresa")) {
+                return empresa.getNome();
+            }
+
+            // Retorna o atributo usando a função da classe Produtos para os demais casos
+            return produtoEncontrado.getAtributo(atributo);
+
+        } catch (AtributoInvalidoException e) {
+            // Captura a exceção lançada pelo Produtos.getAtributo()
+            throw new AtributoNaoExisteException();
+        }
+    }
+
+    //edita os atributos de um produto cujo o o id eh "produtoId"
+    public void editarProduto(int produtoId, String nome, float valor, String categoria){
+
+        //checa se o nome é valido
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new NomeInvalidoException();
+        }
+
+        //Checa se o valor do produto eh valido
+        if (valor <= 0) {
+            throw new ValorInvalidoException();
+        }
+
+        //checa se a categoria eh valido
+        if (categoria == null || categoria.trim().isEmpty()) {
+            throw new CategoriaInvalidoExpetion();
+        }
+
+        Produtos produtoParaEditar = null;
+        Restaurante restauranteDoProduto = null;
+
+        // Percorrer todas as empresas para encontrar o produto pelo ID
+        for (Empresa empresa : empresas) {
+            // O produto só pode estar em um Restaurante
+            if (empresa instanceof Restaurante restaurante) {
+
+                for (Produtos p : restaurante.getProdutos()) {
+                    if (p.getId() == produtoId) {
+                        produtoParaEditar = p;
+                        restauranteDoProduto = restaurante; // Guardar o restaurante para futuras verificações
+                        break;
+                    }
+                }
+            }
+            if (produtoParaEditar != null) {
+                break; // Produto encontrado, sai do loop de empresas
+            }
+        }
+
+        // Checagem de Existência
+        if (produtoParaEditar == null) {
+            throw new ProdutoNaoCadastradoException();
+        }
+
+        // Um produto não pode ter o mesmo nome de outro produto DENTRO DO MESMO RESTAURANTE.
+        if (restauranteDoProduto != null) {
+            for (Produtos p : restauranteDoProduto.getProdutos()) {
+                if (p.getNome().equalsIgnoreCase(nome) && p.getId() != produtoId) {
+                    throw new ProdutoComEsseNomeJaExisteException();
+                }
+            }
+        }
+
+
+        //Atualização dos Atributos
+        produtoParaEditar.setNome(nome);
+        produtoParaEditar.setValor(valor);
+        produtoParaEditar.setCategoria(categoria);
+
+        //Persistência
+        Persistencia.salvar(usuarios, empresas);
+
+    }
+
+    //lista todos os produtos da empresa cujo o Id eh "empresaId
+    public String listarProdutos(int empresaId){
+
+        //Checa se a empresa existe
+        Empresa empresa = null;
+        for (Empresa e : empresas) {
+            if (e.getId() == empresaId) {
+                empresa = e;
+                break;
+            }
+        }
+
+        if (empresa == null) {
+            throw new EmpresaNaoEncontradaException();
+        }
+
+        // Verifica se a empresa é um Restaurante
+        if (!(empresa instanceof Restaurante)) {
+            throw new TipoEmpresaInvalidoException();
+        }
+
+        Restaurante restaurante = (Restaurante) empresa;
+
+        //Constrói a string com o nome dos produtos
+        StringBuilder sb = new StringBuilder();
+        sb.append("{[");
+
+        boolean first = true;
+        for (Produtos p : restaurante.getProdutos()) {
+            if (!first) {
+                sb.append(", ");
+            }
+            sb.append(p.getNome());
+            first = false;
+        }
+
+        sb.append("]}");
+
+        return sb.toString();
+    }
+
+
+
+
+
+
+
+
+
+
+
 }
