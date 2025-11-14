@@ -14,18 +14,34 @@ public class SistemaMyFood {
     private List<Usuario> usuarios;
     private List<Empresa> empresas = new ArrayList<>();
 
+    //Metodo para iniciar o sistema e carregar os dados de usuarios e empresas.
     public SistemaMyFood() {
-        this.usuarios = Persistencia.carregar(); // carrega dados salvos
+
+        this.usuarios = Persistencia.carregarUsuarios();
+        this.empresas = Persistencia.carregarEmpresas();
+
+        // Reconectar empresas aos donos
+        for (Usuario u : usuarios) {
+            if (u instanceof DonoDeEmpresa dono) {
+
+                for (Empresa e : empresas) {
+                    if (e.getDonoId() == dono.getId()) {
+                        dono.adicionarEmpresa(e);
+                    }
+                }
+            }
+        }
     }
 
-    //Metodo para o encerrarSistema
+    //Metodo para o encerrarSistema e salvar os dados
     public void encerrarSistema() {
-        Persistencia.salvar(usuarios);
+        Persistencia.salvar(usuarios, empresas);
     }
 
     //apaga os dados dos usuario
     public void zerarSistema() {
         usuarios.clear();
+        empresas.clear();
     }
 
 
@@ -86,7 +102,8 @@ public class SistemaMyFood {
         usuarios.add(usuario);
 
         //Salvar novo usuario
-        Persistencia.salvar(usuarios);
+        Persistencia.salvar(usuarios, empresas);
+
     }
 
     //Retorna o atributo descrito em "nome" do usuario com base em seu "id"
@@ -170,57 +187,57 @@ public class SistemaMyFood {
 
         ((DonoDeEmpresa) dono).adicionarEmpresa(nova);
 
-        Persistencia.salvar(usuarios);
+        Persistencia.salvar(usuarios, empresas);
 
         return nova.getId();
     }
 
-
     public String getEmpresasDoUsuario(int idDono) {
 
-        // Verificar se o usuário existe e é dono
-        Usuario u = null;
-
-        for (Usuario usuario : usuarios) {
-            if (usuario.getId() == idDono) {
-                u = usuario;
+        // Verifica se o usuário existe
+        Usuario user = null;
+        for (Usuario u : usuarios) {
+            if (u.getId() == idDono) {
+                user = u;
                 break;
             }
         }
 
-        if (u == null) {
+        if (user == null) {
             throw new UsuarioNaoEncontradoException();
         }
 
-        if (!(u instanceof DonoDeEmpresa)) {
+        // Verifica se é dono
+        if (!(user instanceof DonoDeEmpresa)) {
             throw new UsuarioNaoPodeCriarEmpresaException();
         }
 
-        // Coletar empresas do dono
+        DonoDeEmpresa dono = (DonoDeEmpresa) user;
+
+        // Monta a saída usando SOMENTE as empresas do dono
         StringBuilder sb = new StringBuilder();
         sb.append("{[");
 
         boolean first = true;
-        for (Empresa e : empresas) {
-            if (e.getDonoId() == idDono) {
+        for (Empresa e : dono.getEmpresas()) {
 
-                if (!first) {
-                    sb.append(", ");
-                }
-                first = false;
-
-                sb.append("[")
-                        .append(e.getNome())
-                        .append(", ")
-                        .append(e.getEndereco())
-                        .append("]");
+            if (!first) {
+                sb.append(", ");
             }
+            first = false;
+
+            sb.append("[")
+                    .append(e.getNome())
+                    .append(", ")
+                    .append(e.getEndereco())
+                    .append("]");
         }
 
         sb.append("]}");
 
         return sb.toString();
     }
+
 
     public int getIdEmpresa(int idDono, String nome, int indice) {
 
