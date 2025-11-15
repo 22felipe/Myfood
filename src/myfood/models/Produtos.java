@@ -36,7 +36,7 @@ public class Produtos {
         }
     }
 
-    // Método para ser usado pelo Persistencia
+    // Método para ser usado pela Persistencia
     public static void setContadorId(int contadorId) { Produtos.contadorId = contadorId; }
 
 

@@ -146,7 +146,7 @@ public class SistemaMyFood {
 
     public int criarEmpresa(String tipoEmpresa, int donoId, String nome, String endereco, String tipoCozinha) {
 
-        // 1 — Verificar se dono existe
+        //Verificar se dono existe
         Usuario dono = null;
         for (Usuario u : usuarios) {
             if (u.getId() == donoId) {
@@ -156,12 +156,12 @@ public class SistemaMyFood {
         }
         if (dono == null) throw new UsuarioNaoEncontradoException();
 
-        // 2 — Verificar se é DonoDeEmpresa
+        //Verificar se é DonoDeEmpresa
         if (!(dono instanceof DonoDeEmpresa)) {
             throw new UsuarioNaoPodeCriarEmpresaException();
         }
 
-        // 3 — Regra: não pode existir MESMO NOME para donos diferentes
+        // não pode existir MESMO NOME para donos diferentes
         for (Empresa e : empresas) {
             if (e.getNome().equalsIgnoreCase(nome)) {
                 if (e.getDonoId() != donoId) {
@@ -170,7 +170,7 @@ public class SistemaMyFood {
             }
         }
 
-        // 4 — Regra: mesmo dono não pode cadastrar mesmo nome + mesmo endereço
+        //mesmo dono não pode cadastrar mesmo nome + mesmo endereço
         for (Empresa e : empresas) {
             if (e.getDonoId() == donoId &&
                     e.getNome().equalsIgnoreCase(nome) &&
@@ -180,7 +180,7 @@ public class SistemaMyFood {
             }
         }
 
-        // 5 — Criar a empresa de acordo com o tipo
+        //  Criar a empresa de acordo com o tipo
         Empresa nova = null;
 
         //Trabalhei somente com o tipo restaurante, como é pedido nos testes
@@ -664,6 +664,7 @@ public class SistemaMyFood {
 
     }
 
+    // retornar o atributo do pedido cujo o Id eh "pedidoID"
     public String getPedidos(int pedidoId, String atributo) {
 
         //checa se o atributo é valido
@@ -719,6 +720,7 @@ public class SistemaMyFood {
         throw new AtributoNaoExisteException();
     }
 
+    //muda o status do pedido para "preparando"
     public void fecharPedido(int pedidoId){
 
         //checa se o pedido existe
@@ -738,6 +740,7 @@ public class SistemaMyFood {
 
     }
 
+    //remove o produdo pedido pelo nome
     public void removerProduto(int  pedidoId, String nomeProduto){
 
         //checa se o nome do produto é valido
@@ -790,6 +793,7 @@ public class SistemaMyFood {
 
     }
 
+    //retorna o numero o id do pedido com base no Id do cliente e da empresa
     public int getNumeroPedido(int clienteId, int empresaId, int indicePedido) {
 
         // Índice inválido

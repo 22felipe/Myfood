@@ -28,7 +28,7 @@ public class Pedidos {
     }
 
     public void adicionarProduto(Produtos produto) {
-        // Certifique-se de que a lista de produtos foi inicializada no construtor
+        // garantindo que a lista de produtos foi inicializada no construtor
         if (this.produtos == null) {
             this.produtos = new ArrayList<>();
         }
