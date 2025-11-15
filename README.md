@@ -48,11 +48,11 @@ mantendo o princípio da responsabilidade única.
 2.4. Empresa (Restaurante)
 
 -   Controla produtos e pedidos associados.
--   Armazena cardápio e pedidos abertos/concluídos.
+-   Armazena lista dos produtos e pedidos abertos/concluídos.
 
 2.5. Produto
 
--   Entidade simples que compõe o cardápio.
+-   Entidade simples que compõe a lista dos produto.
 -   Gerenciado por um DonoDeEmpresa.
 
 2.6. Pedidos
@@ -193,15 +193,15 @@ Evita classes gigantes cheias de responsabilidades misturadas.
 
 Identificação da Oportunidade
 
-As entidades do sistema possuem papéis claros: Empresa cuida de
-cardápio, Pedido cuida do histórico do cliente, Cliente cuida dos
+As entidades do sistema possuem papéis claros: Empresa/restaurante cuida da
+lista dos produtos, Pedido cuida do histórico do cliente, Cliente cuida dos
 pedidos realizados.
 
 Aplicação no Projeto
 
 -   Cada classe tem responsabilidades definidas de forma clara.
--   Exemplo: Empresa trata de produtos e pedidos; Cliente não manipula
-    cardápios.
+-   Exemplo: Empresa trata de produtos e pedidos; Cliente não manipula a
+    lista dos produtos.
 
 ------------------------------------------------------------------------
 
