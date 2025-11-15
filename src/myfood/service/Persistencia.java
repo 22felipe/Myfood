@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import myfood.models.Pedidos;
 import myfood.models.empresas.Empresa;
 import myfood.models.usuarios.Usuario;
 
@@ -13,11 +14,13 @@ public class Persistencia {
 
     private static final String ARQUIVO_USUARIOS = "usuarios.xml";
     private static final String ARQUIVO_EMPRESAS = "empresas.xml";
+    private static final String ARQUIVO_PEDIDOS = "pedidos.xml";
 
     // ---------- SALVAR ----------
-    public static void salvar(List<Usuario> usuarios, List<Empresa> empresas) {
+    public static void salvar(List<Usuario> usuarios, List<Empresa> empresas, List<Pedidos> pedidos) {
         salvarObjeto(usuarios, ARQUIVO_USUARIOS);
         salvarObjeto(empresas, ARQUIVO_EMPRESAS);
+        salvarObjeto(pedidos, ARQUIVO_PEDIDOS);
     }
 
     private static void salvarObjeto(Object obj, String arquivo) {
@@ -38,6 +41,11 @@ public class Persistencia {
     @SuppressWarnings("unchecked")
     public static List<Empresa> carregarEmpresas() {
         return (List<Empresa>) carregarObjeto(ARQUIVO_EMPRESAS);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static List<Pedidos> carregarPedidos() {
+        return (List<Pedidos>) carregarObjeto(ARQUIVO_PEDIDOS);
     }
 
     private static Object carregarObjeto(String arquivo) {

@@ -1,6 +1,7 @@
 package myfood.service;
 
 import myfood.Exception.*;
+import myfood.models.Pedidos;
 import myfood.models.Produtos;
 import myfood.models.empresas.Empresa;
 import myfood.models.empresas.Restaurante;
@@ -8,18 +9,22 @@ import myfood.models.usuarios.DonoDeEmpresa;
 import myfood.models.usuarios.Usuario;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class SistemaMyFood {
     private List<Usuario> usuarios;
     private List<Empresa> empresas = new ArrayList<>();
+    private List<Pedidos> pedidos = new ArrayList<>();
 
     //Metodo para iniciar o sistema e carregar os dados de usuarios e empresas.
     public SistemaMyFood() {
 
         this.usuarios = Persistencia.carregarUsuarios();
         this.empresas = Persistencia.carregarEmpresas();
+        this.pedidos = Persistencia.carregarPedidos();
 
         // Reconectar empresas aos donos
         for (Usuario u : usuarios) {
@@ -36,13 +41,14 @@ public class SistemaMyFood {
 
     //Metodo para o encerrarSistema e salvar os dados
     public void encerrarSistema() {
-        Persistencia.salvar(usuarios, empresas);
+        Persistencia.salvar(usuarios, empresas, pedidos);
     }
 
     //apaga os dados dos usuario
     public void zerarSistema() {
         usuarios.clear();
         empresas.clear();
+        pedidos.clear();
     }
 
 
@@ -103,7 +109,7 @@ public class SistemaMyFood {
         usuarios.add(usuario);
 
         //Salvar novo usuario
-        Persistencia.salvar(usuarios, empresas);
+        Persistencia.salvar(usuarios, empresas, pedidos);
 
     }
 
@@ -188,7 +194,7 @@ public class SistemaMyFood {
 
         ((DonoDeEmpresa) dono).adicionarEmpresa(nova);
 
-        Persistencia.salvar(usuarios, empresas);
+        Persistencia.salvar(usuarios, empresas, pedidos);
 
         return nova.getId();
     }
@@ -334,7 +340,7 @@ public class SistemaMyFood {
 
     // ---------------------------- testes 3_1.txt e 3_2.txt -----------------------//
 
-    //cria um produto para uma empresa
+    //cria um produto para uma empresa e retornar seu ID
     public int criarProduto(int empresaId, String nome, float valor, String categoria){
 
         //checa se o nome é valido
@@ -383,7 +389,7 @@ public class SistemaMyFood {
         restaurante.adicionarProduto(novoProduto);
 
         //Salvar persistência (após adicionar o produto)
-        Persistencia.salvar(usuarios, empresas);
+        Persistencia.salvar(usuarios, empresas, pedidos);
 
         return novoProduto.getId();
     }
@@ -501,7 +507,7 @@ public class SistemaMyFood {
         produtoParaEditar.setCategoria(categoria);
 
         //Persistência
-        Persistencia.salvar(usuarios, empresas);
+        Persistencia.salvar(usuarios, empresas, pedidos);
 
     }
 
@@ -546,10 +552,271 @@ public class SistemaMyFood {
         return sb.toString();
     }
 
+    // ---------------------------- testes 4_1.txt e 4_2.txt -----------------------//
+
+    //cria um pedido entre uma empresa e um cliente e retornar seu ID
+    public int criarPedido (int clienteId, int empresaId){
+
+        // checar se o Cliente existe
+        Usuario cliente = null;
+        for (Usuario u : usuarios) {
+            if (u.getId() == clienteId) {
+                cliente = u;
+                break;
+            }
+        }
+        if (cliente == null) throw new UsuarioNaoEncontradoException();
+
+        // checar se a Empresa existe
+        Empresa empresa = null;
+        for (Empresa e : empresas) {
+            if (e.getId() == empresaId) {
+                empresa = e;
+                break;
+            }
+        }
+
+        if (empresa == null) throw new EmpresaNaoCadastradaException();
+
+        // Verifica se o usuario é dono
+        if (cliente instanceof DonoDeEmpresa) { throw new DonoDeEmpresaNaoPodeFazerUmPedidoExpetion();}
 
 
+        //Checagem se já existe um pedido em estado "aberto" para este cliente e empresa.
+        for (Pedidos p : pedidos) {
+            if (p.getClienteId() == clienteId &&
+                    p.getEmpresaId() == empresaId &&
+                    p.getEstado().equalsIgnoreCase("aberto")) {
+                throw new NaoEPermitidoDoisPedidosEmAbertoException();
+            }
+        }
+
+        // Cria Pedido
+        Pedidos novoPedido = new Pedidos(cliente.getNome(), empresa.getNome(), clienteId, empresaId);
+        pedidos.add(novoPedido);
+
+        Persistencia.salvar(usuarios, empresas, pedidos); // Salvar novo pedido
+
+        return novoPedido.getId();
+
+    }
+
+    //Adicionar o produto ao pedido
+    public void adicionarProduto(int pedidoId, int produtoId){
+
+        //Checa se o pedido existe
+        Pedidos pedido = null;
 
 
+        for (Pedidos p : pedidos) {
+            if (p.getId() == pedidoId) {
+                pedido = p;
+                break;
+            }
+        }
+
+        if (pedido == null) {
+            throw new NaoExistePedidoEmAbertoException();
+        }
+
+        // O pedido nao pode esta fechado, estado == preparando
+        if (pedido.getEstado().equalsIgnoreCase("preparando")) {
+            throw new NaoEhPossivelAdcionarProdutosPedidoFechadoException();
+        }
+
+        // Buscar a Empresa Dona do Produto
+
+        Produtos produtoAAcionar = null;
+        Empresa empresaDoProduto = null;
+
+        // Percorrer todas as empresas para encontrar o produto
+        for (Empresa e : empresas) {
+            if (e instanceof Restaurante restaurante) {
+                for (Produtos prod : restaurante.getProdutos()) {
+                    if (prod.getId() == produtoId) {
+                        produtoAAcionar = prod;
+                        empresaDoProduto = e;
+                        break;
+                    }
+                }
+            }
+            if (produtoAAcionar != null) {
+                break;
+            }
+        }
+
+        // Se o produto não for encontrado em nenhuma empresa
+        if (produtoAAcionar == null) {
+            throw new ProdutoNaoEncontradoException();
+        }
+
+        // Validar se o Produto Pertence à Empresa do Pedido
+
+        // checa se o pedido existe na empresa registrada do pedido
+        if (empresaDoProduto.getId() != pedido.getEmpresaId()) {
+            throw new ProdutoNaoPertenceAEssaEmpresaException();
+        }
+
+        // Adicionar o Produto
+        pedido.adicionarProduto(produtoAAcionar);
+
+        Persistencia.salvar(usuarios, empresas, pedidos);
+
+    }
+
+    public String getPedidos(int pedidoId, String atributo) {
+
+        //checa se o atributo é valido
+        if (atributo == null || atributo.trim().isEmpty()) {
+            throw new AtributoInvalidoException();
+        }
+
+
+        //checa se o pedido existe
+        Pedidos pedido = null;
+        for (Pedidos p : pedidos) {
+            if (p.getId() == pedidoId) {
+                pedido = p;
+                break;
+            }
+        }
+
+        if (pedido == null) {
+            throw new PedidoNaoEncontradoException();
+        }
+
+        switch (atributo) {
+
+            case "cliente":
+                return pedido.getCliente();
+
+            case "empresa":
+                return pedido.getEmpresa();
+
+            case "estado":
+                return pedido.getEstado();
+
+            case "valor":
+                // Garantir que o valor seja formatado COM duas casas decimais
+                return String.format(Locale.US, "%.2f", pedido.getValorTotal());
+            case "produtos":
+                List<Produtos> lista = pedido.getProdutos();
+
+                // Montar formato exato {[A, B, C]}
+                StringBuilder sb = new StringBuilder();
+                sb.append("{[");
+
+                for (int i = 0; i < lista.size(); i++) {
+                    sb.append(lista.get(i).getNome());
+                    if (i < lista.size() - 1) sb.append(", ");
+                }
+
+                sb.append("]}");
+                return sb.toString();
+        }
+
+        // Se o atributo nao existe em produto
+        throw new AtributoNaoExisteException();
+    }
+
+    public void fecharPedido(int pedidoId){
+
+        //checa se o pedido existe
+        Pedidos pedido = null;
+        for (Pedidos p : pedidos) {
+            if (p.getId() == pedidoId) {
+                pedido = p;
+                break;
+            }
+        }
+
+        if (pedido == null) {
+            throw new PedidoNaoEncontradoException();
+        }
+
+        pedido.setEstado("preparando");
+
+    }
+
+    public void removerProduto(int  pedidoId, String nomeProduto){
+
+        //checa se o nome do produto é valido
+        if (nomeProduto == null || nomeProduto.trim().isEmpty()) {
+            throw new ProdutoInvalidoException();
+        }
+
+        //checa se o produto existe
+        Pedidos pedido = null;
+        for (Pedidos p : pedidos) {
+            if (p.getId() == pedidoId) {
+                pedido = p;
+                break;
+            }
+        }
+
+        if (pedido == null) {
+            throw new PedidoNaoEncontradoException();
+        }
+
+        // O pedido nao pode esta fechado, estado == preparando
+        if (pedido.getEstado().equalsIgnoreCase("preparando")) {
+            throw new NaoEhPossivelRemoverProdutosEmPedidoFechadoException();
+        }
+
+        //procuramos o produto dentro do pedido
+        Produtos produtoAremover = null;
+
+        for (Produtos prod : pedido.getProdutos()) {
+            if (prod.getNome().equalsIgnoreCase(nomeProduto)) {
+                produtoAremover = prod;
+                break;
+            }
+        }
+
+        // Se não encontrou produto com esse nome
+        if (produtoAremover == null) {
+            throw new ProdutoNaoEncontradoException();
+        }
+
+        // Remover UM produto apenas
+        pedido.getProdutos().remove(produtoAremover);
+
+        // Atualizar valor total
+        pedido.setValorTotal(pedido.getValorTotal() - produtoAremover.getValor());
+
+        // Salvar estado
+        Persistencia.salvar(usuarios, empresas, pedidos);
+
+
+    }
+
+    public int getNumeroPedido(int clienteId, int empresaId, int indicePedido) {
+
+        // Índice inválido
+        if (indicePedido < 0) {
+            throw new IndiceInvalidoException();
+        }
+
+        // Filtrar pedidos do cliente naquela empresa
+        List<Pedidos> lista = new ArrayList<>();
+
+        for (Pedidos p : pedidos) {
+            if (p.getClienteId() == clienteId && p.getEmpresaId() == empresaId) {
+                lista.add(p);
+            }
+        }
+
+        // Ordenar por id (mais antigo primeiro)
+        lista.sort(Comparator.comparingInt(Pedidos::getId));
+
+        // Verificar se o índice existe
+        if (indicePedido >= lista.size()) {
+            throw new IndiceMaiorQueEsperadoException();
+        }
+
+        // Retornar número do pedido
+        return lista.get(indicePedido).getId();
+    }
 
 
 
@@ -557,3 +824,6 @@ public class SistemaMyFood {
 
 
 }
+
+
+

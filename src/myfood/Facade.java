@@ -81,5 +81,30 @@ public class Facade {
         return sistema.listarProdutos(empresa);
     }
 
+    // ---------------------------- testes 4_1.txt e 4_2.txt -----------------------//
+
+    public int criarPedido (int cliente, int empresa){
+        return sistema.criarPedido( cliente, empresa);
+    }
+
+    public void adicionarProduto(int numero, int produto){
+        sistema.adicionarProduto(numero, produto);
+    }
+
+    public String getPedidos(int numero, String atributo) {
+        return sistema.getPedidos (numero, atributo);
+    }
+
+    public void fecharPedido(int numero){
+        sistema.fecharPedido(numero);
+    }
+
+    public void removerProduto(int  pedido, String produto){
+        sistema.removerProduto(pedido, produto);
+    }
+
+    public int getNumeroPedido(int cliente, int empresa, int indice){
+        return sistema.getNumeroPedido(cliente, empresa, indice);
+    }
 
 }
