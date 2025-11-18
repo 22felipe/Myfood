@@ -4,6 +4,7 @@ import myfood.Exception.*;
 import myfood.models.Pedidos;
 import myfood.models.Produtos;
 import myfood.models.empresas.Empresa;
+import myfood.models.empresas.Mercado;
 import myfood.models.empresas.Restaurante;
 import myfood.models.usuarios.DonoDeEmpresa;
 import myfood.models.usuarios.Usuario;
@@ -340,7 +341,7 @@ public class SistemaMyFood {
 
     // ---------------------------- testes 3_1.txt e 3_2.txt -----------------------//
 
-    //cria um produto para uma empresa e retornar seu ID
+    //cria um produto para uma empresa e retornar seu ID (modificado para funcionar durante teste 5_1)
     public int criarProduto(int empresaId, String nome, float valor, String categoria){
 
         //checa se o nome é valido
@@ -371,22 +372,16 @@ public class SistemaMyFood {
             throw new EmpresaNaoCadastradaException();
         }
 
-        // Verifica se a empresa é um Restaurante
-        if (!(empresa instanceof Restaurante)) {
-            throw new TipoEmpresaInvalidoException();
-        }
-
-        Restaurante restaurante = (Restaurante) empresa;
-
-        //Verifica se ja existe um produto com esse nome nessa empresa
-        for (Produtos p : restaurante.getProdutos()) {
+        // Verifica se a empresa aceita produtos (todas aceitam agora)
+        for (Produtos p : empresa.getProdutos()) {
             if (p.getNome().equalsIgnoreCase(nome)) {
                 throw new ProdutoComEsseNomeJaExisteException();
             }
         }
 
         Produtos novoProduto = new Produtos(nome, valor, categoria);
-        restaurante.adicionarProduto(novoProduto);
+
+        empresa.adicionarProduto(novoProduto);
 
         //Salvar persistência (após adicionar o produto)
         Persistencia.salvar(usuarios, empresas, pedidos);
@@ -631,15 +626,15 @@ public class SistemaMyFood {
 
         // Percorrer todas as empresas para encontrar o produto
         for (Empresa e : empresas) {
-            if (e instanceof Restaurante restaurante) {
-                for (Produtos prod : restaurante.getProdutos()) {
-                    if (prod.getId() == produtoId) {
-                        produtoAAcionar = prod;
-                        empresaDoProduto = e;
-                        break;
-                    }
+
+            for (Produtos prod : e.getProdutos()) {
+                if (prod.getId() == produtoId) {
+                    produtoAAcionar = prod;
+                    empresaDoProduto = e;
+                    break;
                 }
             }
+
             if (produtoAAcionar != null) {
                 break;
             }
@@ -821,6 +816,217 @@ public class SistemaMyFood {
         // Retornar número do pedido
         return lista.get(indicePedido).getId();
     }
+
+
+    // ---------------------------- testes 5_1.txt e 5_2.txt -----------------------//
+
+    //criar empresa do tipo mercado
+    public int criarEmpresa(String tipoEmpresa, int donoId, String nome, String endereco,
+                            String abre, String fecha, String tipoMercado) {
+
+
+        // Tipo de mercado obrigatório
+        if (tipoEmpresa == null || tipoEmpresa.trim().isEmpty()) {
+            throw new TipoEmpresaInvalidoException();
+        }
+
+        //Trabalhei somente com o tipo mercado nessa funcao
+        if (!(tipoEmpresa.equalsIgnoreCase("Mercado"))) {
+            throw new TipoEmpresaInvalidoException();
+        }
+
+        // Tipo de mercado obrigatório
+        if (tipoMercado == null || tipoMercado.trim().isEmpty()) {
+            throw new TipoDeMercadoInvalidoException();
+        }
+
+        // nome obrigatório
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new NomeInvalidoException();
+        }
+
+        // endereco obrigatório
+        if (endereco == null || endereco.trim().isEmpty()) {
+            throw new EnderecoDaEmpresaInvalidoException();
+        }
+
+
+        // --------------- Processo para validar os horarios - começo ------------
+
+
+        if(abre == null){ throw new HorarioInvalidoException();}
+
+        if(abre.trim().isEmpty()){throw new FormatoDeHoraInvalidoException();}
+
+        if(fecha ==null) {throw new HorarioInvalidoException();}
+
+        if(fecha.trim().isEmpty()){throw new FormatoDeHoraInvalidoException();}
+
+        //Checar se o horario de abertura e fechamento segue o padrao "HH:MM"
+        if (abre.length() != 5 || abre.charAt(2) != ':') {
+            throw new FormatoDeHoraInvalidoException();
+        }
+
+        if (fecha.length() != 5 || fecha.charAt(2) != ':') {
+            throw new FormatoDeHoraInvalidoException();
+        }
+
+        // Quebra HH:MM
+        int abreH = Integer.parseInt(abre.substring(0, 2));
+        int abreM = Integer.parseInt(abre.substring(3, 5));
+        int fechaH = Integer.parseInt(fecha.substring(0, 2));
+        int fechaM = Integer.parseInt(fecha.substring(3, 5));
+
+        // Validar intervalos reais
+        if (abreH < 0 || abreH > 23 || fechaH < 0 || fechaH > 23 ||
+                abreM < 0 || abreM > 59 || fechaM < 0 || fechaM > 59) {
+            throw new HorarioInvalidoException();
+        }
+
+        // Se o horário de fechamento for menor que o de abertura, é inválido.
+        if (fechaH < abreH) {
+            throw new HorarioInvalidoException();
+        }
+
+        // Se as horas forem iguais, os minutos de fechamento devem ser maiores que os de abertura.
+        if (fechaH == abreH && fechaM < abreM) {
+            throw new HorarioInvalidoException();
+        }
+
+        // Se o tempo de operação for 0 (abre e fecha no mesmo instante)
+        if (fechaH == abreH && fechaM == abreM) {
+            throw new HorarioInvalidoException();
+        }
+
+        // ----------- Processo para validar os horarios - Fim -----------------
+
+
+        //Verificar se dono existe
+        Usuario dono = null;
+        for (Usuario u : usuarios) {
+            if (u.getId() == donoId) {
+                dono = u;
+                break;
+            }
+        }
+
+        if (dono == null) throw new UsuarioNaoEncontradoException();
+
+        //Verificar se é DonoDeEmpresa
+        if (!(dono instanceof DonoDeEmpresa)) {
+            throw new UsuarioNaoPodeCriarEmpresaException();
+        }
+
+        // não pode existir MESMO NOME para donos diferentes
+        for (Empresa e : empresas) {
+            if (e.getNome().equalsIgnoreCase(nome)) {
+                if (e.getDonoId() != donoId) {
+                    throw new EmpresaComEsseNomeJaExisteException();
+                }
+            }
+        }
+
+        //mesmo dono não pode cadastrar mesmo nome + mesmo endereço
+        for (Empresa e : empresas) {
+            if (e.getDonoId() == donoId &&
+                    e.getNome().equalsIgnoreCase(nome) &&
+                    e.getEndereco().equalsIgnoreCase(endereco)) {
+
+                throw new ProibidoCadastrarDuasEmpresasMesmoNomeLocalException();
+            }
+        }
+
+
+        //  Criar a empresa de acordo com o tipo
+        Empresa nova = null;
+
+        nova = new Mercado(nome, endereco, donoId, abre, fecha, tipoMercado);
+
+        empresas.add(nova);
+
+        ((DonoDeEmpresa) dono).adicionarEmpresa(nova);
+
+        Persistencia.salvar(usuarios, empresas, pedidos);
+
+        return nova.getId();
+    }
+
+    public void alterarFuncionamento(int mercadoId, String abre, String fecha){
+
+        //checando se as variaveis estao vazias ou nulas.
+        if(abre == null){ throw new HorarioInvalidoException();}
+
+        if(abre.trim().isEmpty()){throw new FormatoDeHoraInvalidoException();}
+
+        if(fecha ==null) {throw new HorarioInvalidoException();}
+
+        if(fecha.trim().isEmpty()){throw new FormatoDeHoraInvalidoException();}
+
+        //Checar se o horario de abertura e fechamento segue o padrao "HH:MM"
+        if (abre.length() != 5 || abre.charAt(2) != ':') {
+            throw new FormatoDeHoraInvalidoException();
+        }
+
+        if (fecha.length() != 5 || fecha.charAt(2) != ':') {
+            throw new FormatoDeHoraInvalidoException();
+        }
+
+        // Quebra HH:MM
+        int abreH = Integer.parseInt(abre.substring(0, 2));
+        int abreM = Integer.parseInt(abre.substring(3, 5));
+        int fechaH = Integer.parseInt(fecha.substring(0, 2));
+        int fechaM = Integer.parseInt(fecha.substring(3, 5));
+
+        // Validar intervalos reais
+        if (abreH < 0 || abreH > 23 || fechaH < 0 || fechaH > 23 ||
+                abreM < 0 || abreM > 59 || fechaM < 0 || fechaM > 59) {
+            throw new HorarioInvalidoException();
+        }
+
+        // Se o horário de fechamento for menor que o de abertura, é inválido.
+        if (fechaH < abreH) {
+            throw new HorarioInvalidoException();
+        }
+
+        // Se as horas forem iguais, os minutos de fechamento devem ser maiores que os de abertura.
+        if (fechaH == abreH && fechaM < abreM) {
+            throw new HorarioInvalidoException();
+        }
+
+        // Se o tempo de operação for 0 (abre e fecha no mesmo instante)
+        if (fechaH == abreH && fechaM == abreM) {
+            throw new HorarioInvalidoException();
+        }
+
+        //busca o mercado pelo id
+        Mercado mercado = null;
+        for (Empresa e : empresas) {
+            if (e.getId() == mercadoId) {
+                if (e instanceof Mercado m) {
+                    mercado = m;
+                    break;
+                } else {
+                    throw new NaoEhUmMercadoException();
+                }
+            }
+        }
+
+        if (mercado == null) {
+            throw new EmpresaNaoCadastradaException();
+        }
+
+        //modifica as informações
+        mercado.setAbre(abre);
+        mercado.setFecha(fecha);
+
+
+        //salva as informacoes
+        Persistencia.salvar(usuarios, empresas, pedidos);
+
+
+    }
+
+
 
 
 

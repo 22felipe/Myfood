@@ -107,4 +107,16 @@ public class Facade {
         return sistema.getNumeroPedido(cliente, empresa, indice);
     }
 
+
+    // ---------------------------- testes 5_1.txt e 5_2.txt -----------------------//
+
+    //criar uma empresa para o tipo "mercado"
+    public int criarEmpresa(String tipoEmpresa, int dono, String nome, String endereco,
+                            String abre, String fecha, String tipoMercado) {
+        return sistema.criarEmpresa(tipoEmpresa, dono, nome, endereco, abre, fecha, tipoMercado);
+    }
+
+    public void alterarFuncionamento(int mercado, String abre, String fecha){
+        sistema.alterarFuncionamento(mercado, abre, fecha);
+    }
 }

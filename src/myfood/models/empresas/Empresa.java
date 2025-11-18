@@ -1,6 +1,10 @@
 package myfood.models.empresas;
 
 import myfood.Exception.AtributoInvalidoException;
+import myfood.models.Produtos;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Empresa {
 
@@ -13,6 +17,20 @@ public abstract class Empresa {
     protected String tipoEmpresa;
     protected int donoId;
 
+    //teste
+    protected List<Produtos> produtos = new ArrayList<>();
+
+    public List<Produtos> getProdutos() {
+        return produtos;
+    }
+
+    public void adicionarProduto(Produtos p) {
+        produtos.add(p);
+    }
+
+    //teste
+
+
 
     public Empresa() { }
 
@@ -22,6 +40,7 @@ public abstract class Empresa {
         this.endereco = endereco;
         this.tipoEmpresa = tipoEmpresa;
         this.donoId = donoId;
+        this.produtos = new ArrayList<>();
     }
 
 
@@ -45,6 +64,7 @@ public abstract class Empresa {
     public String getTipoEmpresa() { return tipoEmpresa; }
     public int getDonoId() { return donoId; }
 
+
     //Sets
     public static void setContadorId(int contadorId) { Empresa.contadorId = contadorId;}
     public void setDonoId(int donoId) { this.donoId = donoId; }
@@ -52,6 +72,7 @@ public abstract class Empresa {
     public void setId(int id) { this.id = id; }
     public void setNome(String nome) { this.nome = nome;}
     public void setTipoEmpresa(String tipoEmpresa) { this.tipoEmpresa = tipoEmpresa; }
+    public void setProdutos(List<Produtos> produtos) { this.produtos = produtos; }
 
 }
 
