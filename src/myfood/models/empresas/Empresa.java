@@ -51,7 +51,6 @@ public abstract class Empresa {
             case "nome": return nome;
             case "endereco": return endereco;
             case "tipoempresa": return tipoEmpresa;
-            //case "dono": return String.valueOf(donoId);
             default: throw new AtributoInvalidoException();
         }
     }

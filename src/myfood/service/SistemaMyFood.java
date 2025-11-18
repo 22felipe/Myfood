@@ -4,6 +4,7 @@ import myfood.Exception.*;
 import myfood.models.Pedidos;
 import myfood.models.Produtos;
 import myfood.models.empresas.Empresa;
+import myfood.models.empresas.Farmacia;
 import myfood.models.empresas.Mercado;
 import myfood.models.empresas.Restaurante;
 import myfood.models.usuarios.DonoDeEmpresa;
@@ -1023,6 +1024,86 @@ public class SistemaMyFood {
         //salva as informacoes
         Persistencia.salvar(usuarios, empresas, pedidos);
 
+
+    }
+
+
+    // ---------------------------- testes 6_1.txt e 6_2.txt -----------------------//
+
+    //criar empresa para o tipo "farmacia"
+    public int criarEmpresa(String tipoEmpresa, int donoId, String nomeEmpresa,String endereco, Boolean aberto24Horas, int numeroFuncionarios) {
+
+        if(numeroFuncionarios <= 0) {
+            throw new NumeroDeFuncionariosInvalidoException();
+        }
+
+        // Tipo de mercado obrigatório
+        if (tipoEmpresa == null || tipoEmpresa.trim().isEmpty()) {
+            throw new TipoEmpresaInvalidoException();
+        }
+
+        //Trabalhei somente com o tipo farmacia nessa funcao
+        if (!(tipoEmpresa.equalsIgnoreCase("farmacia"))) {
+            throw new TipoEmpresaInvalidoException();
+        }
+
+        // nome obrigatório
+        if (nomeEmpresa == null || nomeEmpresa.trim().isEmpty()) {
+            throw new NomeInvalidoException();
+        }
+
+        // endereco obrigatório
+        if (endereco == null || endereco.trim().isEmpty()) {
+            throw new EnderecoDaEmpresaInvalidoException();
+        }
+
+        //Verificar se dono existe
+        Usuario dono = null;
+        for (Usuario u : usuarios) {
+            if (u.getId() == donoId) {
+                dono = u;
+                break;
+            }
+        }
+
+        if (dono == null) throw new UsuarioNaoEncontradoException();
+
+        // não pode existir MESMO NOME para donos diferentes
+        for (Empresa e : empresas) {
+            if (e.getNome().equalsIgnoreCase(nomeEmpresa)) {
+                if (e.getDonoId() != donoId) {
+                    throw new EmpresaComEsseNomeJaExisteException();
+                }
+            }
+        }
+
+        //mesmo dono não pode cadastrar mesmo nome + mesmo endereço
+        for (Empresa e : empresas) {
+            if (e.getDonoId() == donoId &&
+                    e.getNome().equalsIgnoreCase(nomeEmpresa) &&
+                    e.getEndereco().equalsIgnoreCase(endereco)) {
+
+                throw new ProibidoCadastrarDuasEmpresasMesmoNomeLocalException();
+            }
+        }
+
+        //Verificar se é DonoDeEmpresa
+        if (!(dono instanceof DonoDeEmpresa)) {
+            throw new UsuarioNaoPodeCriarEmpresaException();
+        }
+
+        //  Criar a empresa de acordo com o tipo
+        Empresa nova = null;
+
+        nova = new Farmacia(nomeEmpresa, endereco, tipoEmpresa, donoId, aberto24Horas, numeroFuncionarios);
+
+        empresas.add(nova);
+
+        ((DonoDeEmpresa) dono).adicionarEmpresa(nova);
+
+        Persistencia.salvar(usuarios, empresas, pedidos);
+
+        return nova.getId();
 
     }
 

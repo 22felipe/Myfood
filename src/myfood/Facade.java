@@ -119,4 +119,12 @@ public class Facade {
     public void alterarFuncionamento(int mercado, String abre, String fecha){
         sistema.alterarFuncionamento(mercado, abre, fecha);
     }
+
+    // ---------------------------- testes 6_1.txt e 6_2.txt -----------------------//
+
+    public int criarEmpresa(String tipoEmpresa, int dono, String nome, String endereco, Boolean aberto24Horas, int numeroFuncionarios){
+        return sistema.criarEmpresa(tipoEmpresa,dono, nome, endereco, aberto24Horas, numeroFuncionarios);
+    }
+
+
 }
