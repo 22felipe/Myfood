@@ -12,7 +12,7 @@ lógico do sistema.
 A camada principal é constituída pelas classes de domínio (usuários,
 empresas/restaurantes, produtos, pedidos), controladas e orquestradas
 pelo SistemaMyFood, que funciona como o “núcleo” da lógica da aplicação.
-A classe Facade atua como ponto de entrada único — recebendo comandos
+A classe Facade atua como ponto de entrada único, recebendo comandos
 externos (como os do EasyAccept) e delegando para o sistema interno.
 
 A interação entre esses módulos é definida de modo que cada entidade
