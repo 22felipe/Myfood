@@ -34,6 +34,10 @@ public abstract class Empresa {
         return entregadores;
     }
 
+    public void setEntregadores(List<Integer> entregadores) {
+        this.entregadores = entregadores;
+    }
+
     public void adicionarEntregador(int entregadorId) {
         entregadores.add(entregadorId);
     }

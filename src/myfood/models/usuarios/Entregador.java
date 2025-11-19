@@ -31,6 +31,10 @@ public class Entregador extends Usuario{
         return empresas;
     }
 
+    public void setEmpresas(List<Integer> empresas) {
+        this.empresas = empresas;
+    }
+
     public void adicionarEmpresa(int empresaId) {
         empresas.add(empresaId);
     }
