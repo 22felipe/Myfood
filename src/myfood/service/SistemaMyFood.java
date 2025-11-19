@@ -8,6 +8,7 @@ import myfood.models.empresas.Farmacia;
 import myfood.models.empresas.Mercado;
 import myfood.models.empresas.Restaurante;
 import myfood.models.usuarios.DonoDeEmpresa;
+import myfood.models.usuarios.Entregador;
 import myfood.models.usuarios.Usuario;
 
 import java.util.ArrayList;
@@ -88,11 +89,36 @@ public class SistemaMyFood {
             if (dono.getCpf() == null || dono.getCpf().length() != 14) {
                 throw new CPFInvalidoException();
             }
-        } else {
+        }
 
-            if(usuario.getEndereco() == null || usuario.getEndereco().trim().isEmpty()){
-                throw new EnderecoInvalidoException();
+        // Se for Entregador, verificar o placa e veiculo
+        if (usuario instanceof Entregador) {
+            Entregador entregador = (Entregador) usuario;
+
+            // Validação de placa
+            if (entregador.getPlaca() == null || entregador.getPlaca().trim().isEmpty()) {
+                throw new PlacaInvalidaException();
             }
+
+            // Verifica se a placa é única
+            for (Usuario u : usuarios) {
+                if (u instanceof Entregador) {
+                    Entregador e = (Entregador) u;
+                    if (e.getPlaca().equalsIgnoreCase(entregador.getPlaca())) {
+                        throw new PlacaInvalidaException(); // criar esta exception
+                    }
+                }
+            }
+
+            //validacao veiculo
+            if (entregador.getVeiculo() == null || entregador.getVeiculo().trim().isEmpty()) {
+                throw new VeiculoInvalidoException();
+            }
+        }
+
+        //verificar o endereco
+        if(usuario.getEndereco() == null || usuario.getEndereco().trim().isEmpty()){
+            throw new EnderecoInvalidoException();
         }
 
         // Validação de email
@@ -1105,6 +1131,149 @@ public class SistemaMyFood {
 
         return nova.getId();
 
+    }
+
+
+    // ---------------------------- testes 7_1.txt e 7_2.txt -----------------------//
+
+    public void cadastrarEntregador(int empresaId, int entregadorId) {
+
+        // Buscar a Empresa pelo ID
+        Empresa emp = null;
+        for (Empresa e : empresas) {
+            if (e.getId() == empresaId) {
+                emp = e;
+                break;
+            }
+        }
+
+        // Validação de Empresa
+        if (emp == null) {
+            throw new EmpresaNaoCadastradaException();
+        }
+
+        // Buscar o Usuário (Entregador) pelo ID
+        Usuario user = null;
+        for (Usuario u : usuarios) {
+            if (u.getId() == entregadorId) {
+                user = u;
+                break;
+            }
+        }
+
+        // Validação de Usuário
+        if (user == null) {
+            throw new UsuarioNaoEncontradoException();
+        }
+
+        // Validação de Tipo de Usuário (Deve ser um Entregador)
+        if (!(user instanceof Entregador)) {
+            throw new UsuarioNaoEhUmEntregadorException();
+        }
+
+        Entregador entregador = (Entregador) user;
+
+        // Evitar duplicação
+        if (emp.getEntregadores().contains(entregadorId)) {
+            throw new EntregadorJaCadastradoException();
+        }
+
+        // Criar vínculo dos dois lados (Adicionar ID da Empresa ao Entregador e vice-versa)
+        emp.adicionarEntregador(entregadorId);
+        entregador.adicionarEmpresa(empresaId);
+
+        // Persistir as alterações
+        Persistencia.salvar(usuarios, empresas, pedidos);
+    }
+
+    public String getEntregadores(int idEmpresa) { // MUDANÇA: Retorna String
+
+        // Buscar a Empresa pelo ID
+        Empresa empresa = null;
+        for (Empresa e : empresas) {
+            if (e.getId() == idEmpresa) {
+                empresa = e;
+                break;
+            }
+        }
+
+        // Empresa deve existir
+        if (empresa == null) {
+            throw new EmpresaNaoCadastradaException();
+        }
+
+        // Lista para armazenar os emails
+        List<String> emailsEntregadores = new ArrayList<>();
+
+        // Lista de IDs de entregadores da empresa
+        List<Integer> idsEntregadores = empresa.getEntregadores();
+
+        // Iterar sobre a lista de IDs de entregadores e buscar o usuário
+        for (int entregadorId : idsEntregadores) {
+
+            Usuario user = null;
+            for (Usuario u : usuarios) {
+                if (u.getId() == entregadorId) {
+                    user = u;
+                    break;
+                }
+            }
+
+            // Adicionando verificação para evitar NullPointerException (caso o Entregador não exista em 'usuarios')
+            if (user != null) {
+                emailsEntregadores.add(user.getEmail());
+            }
+        }
+
+        // Corrigindo o formato de saída para "{[email1, email2, ...]}"
+        String conteudo = String.join(", ", emailsEntregadores);
+        return "{[" + conteudo + "]}";
+    }
+
+    public String getEmpresas(int idEntregador) { // MUDANÇA: Retorna String
+
+        // Buscar o Usuário (Entregador) pelo ID
+        Usuario user = null;
+        for (Usuario u : usuarios) {
+            if (u.getId() == idEntregador) {
+                user = u;
+                break;
+            }
+        }
+
+        if (user == null) {
+            throw new UsuarioNaoEncontradoException();
+        }
+
+        // Validação: Checar se o usuário é um Entregador
+        if (!(user instanceof Entregador)) {
+            throw new UsuarioNaoEhUmEntregadorException();
+        }
+
+        Entregador entregador = (Entregador) user;
+
+        // Obter a lista de IDs de empresas vinculadas ao entregador
+        List<Integer> idsEmpresas = entregador.getEmpresas();
+
+        // Lista para armazenar o resultado final (Nome e Endereço) no formato "[Nome, Endereço]"
+        List<String> infoEmpresas = new ArrayList<>();
+
+        // Buscar os dados da Empresa (Nome e Endereço) a partir dos IDs
+        for (int empresaId : idsEmpresas) {
+
+            for (Empresa empresa : empresas) {
+                if (empresa.getId() == empresaId) {
+                    // Monta a string no formato [Nome, Endereço] e adiciona à lista
+                    String info = "[" + empresa.getNome() + ", " + empresa.getEndereco() + "]";
+                    infoEmpresas.add(info);
+                    break; // Empresa encontrada, passa para o próximo ID
+                }
+            }
+        }
+
+        // Corrigindo o formato de saída para "{[[Nome1, Endereco1], [Nome2, Endereco2], ...]}"
+        String conteudo = String.join(", ", infoEmpresas);
+        return "{[" + conteudo + "]}";
     }
 
 

@@ -3,7 +3,10 @@ package myfood;
 
 import myfood.models.usuarios.Cliente;
 import myfood.models.usuarios.DonoDeEmpresa;
+import myfood.models.usuarios.Entregador;
 import myfood.service.SistemaMyFood;
+
+import java.util.List;
 
 public class Facade {
 
@@ -124,6 +127,27 @@ public class Facade {
 
     public int criarEmpresa(String tipoEmpresa, int dono, String nome, String endereco, Boolean aberto24Horas, int numeroFuncionarios){
         return sistema.criarEmpresa(tipoEmpresa,dono, nome, endereco, aberto24Horas, numeroFuncionarios);
+    }
+
+
+    // ---------------------------- testes 7_1.txt e 7_2.txt -----------------------//
+
+    // Cria entregador
+    public void criarUsuario(String nome, String email, String senha, String endereco, String veiculo, String placa) {
+        Entregador entregador = new Entregador(nome, email, senha, endereco, veiculo, placa);
+        sistema.criarUsuario(entregador);
+    }
+
+    public void cadastrarEntregador(int empresa, int entregador){
+        sistema.cadastrarEntregador(empresa, entregador);
+    }
+
+    public String getEntregadores(int idEmpresa){
+        return sistema.getEntregadores(idEmpresa);
+    }
+
+    public String getEmpresas(int idEntregador){
+        return sistema.getEmpresas(idEntregador);
     }
 
 

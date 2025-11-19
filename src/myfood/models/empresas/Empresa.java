@@ -11,15 +11,16 @@ public abstract class Empresa {
     //ids sequenciais, unico para cada empresa
     private static int contadorId = 0;
 
+    private List<Integer> entregadores = new ArrayList<>(); //entregadores que trabalham para essa empresa
+    protected List<Produtos> produtos = new ArrayList<>(); //produtos cadastrados na empresa
     protected int id;
     protected String nome;
     protected String endereco;
     protected String tipoEmpresa;
     protected int donoId;
 
-    //teste
-    protected List<Produtos> produtos = new ArrayList<>();
 
+    //funcoes para trabalhar com os produtos da empresa
     public List<Produtos> getProdutos() {
         return produtos;
     }
@@ -28,7 +29,14 @@ public abstract class Empresa {
         produtos.add(p);
     }
 
-    //teste
+    //funcoes para trabalhar com os entregadores da empresa
+    public List<Integer> getEntregadores() {
+        return entregadores;
+    }
+
+    public void adicionarEntregador(int entregadorId) {
+        entregadores.add(entregadorId);
+    }
 
 
 
