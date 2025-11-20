@@ -50,7 +50,7 @@ public class SistemaMyFood {
         Persistencia.salvar(usuarios, empresas, pedidos, entregas);
     }
 
-    //apaga os dados dos usuario
+    //apaga os dados dos usuario, empresas, pedidos e entregas
     public void zerarSistema() {
         usuarios.clear();
         empresas.clear();
@@ -176,6 +176,7 @@ public class SistemaMyFood {
 
     // ---------------------------- testes 2_1.txt e 2_2.txt -----------------------//
 
+    //cria uma empresa do tipo "restaurante"
     public int criarEmpresa(String tipoEmpresa, int donoId, String nome, String endereco, String tipoCozinha) {
 
         //Verificar se dono existe
@@ -982,6 +983,7 @@ public class SistemaMyFood {
         return nova.getId();
     }
 
+    //altera o horario de funcionamento de mercado
     public void alterarFuncionamento(int mercadoId, String abre, String fecha){
 
         //checando se as variaveis estao vazias ou nulas.
@@ -1068,7 +1070,6 @@ public class SistemaMyFood {
             throw new NumeroDeFuncionariosInvalidoException();
         }
 
-        // Tipo de mercado obrigatório
         if (tipoEmpresa == null || tipoEmpresa.trim().isEmpty()) {
             throw new TipoEmpresaInvalidoException();
         }
@@ -1141,6 +1142,7 @@ public class SistemaMyFood {
 
     // ---------------------------- testes 7_1.txt e 7_2.txt -----------------------//
 
+    // Cria entregador
     public void cadastrarEntregador(int empresaId, int entregadorId) {
 
         // Buscar a Empresa pelo ID
@@ -1191,6 +1193,7 @@ public class SistemaMyFood {
         Persistencia.salvar(usuarios, empresas, pedidos, entregas);
     }
 
+    //cadastra o entregador em uma empresa
     public String getEntregadores(int idEmpresa) {
 
         // Buscar a Empresa pelo ID
@@ -1224,17 +1227,18 @@ public class SistemaMyFood {
                 }
             }
 
-            // Adicionando verificação para evitar NullPointerException (caso o Entregador não exista em 'usuarios')
+            // verificação caso o Entregador não exista em 'usuarios')
             if (user != null) {
                 emailsEntregadores.add(user.getEmail());
             }
         }
 
-        // Corrigindo o formato de saída para "{[email1, email2, ...]}"
+        // formato de saída "{[email1, email2, ...]}"
         String conteudo = String.join(", ", emailsEntregadores);
         return "{[" + conteudo + "]}";
     }
 
+    //Retorna todos os emails dos entregadores que estão alocados em uma empresa.
     public String getEmpresas(int idEntregador) {
 
         // Buscar o Usuário (Entregador) pelo ID
@@ -1250,7 +1254,7 @@ public class SistemaMyFood {
             throw new UsuarioNaoEncontradoException();
         }
 
-        // Validação: Checar se o usuário é um Entregador
+        // Checar se o usuário é um Entregador
         if (!(user instanceof Entregador)) {
             throw new UsuarioNaoEhUmEntregadorException();
         }
@@ -1276,7 +1280,7 @@ public class SistemaMyFood {
             }
         }
 
-        // Corrigindo o formato de saída para "{[[Nome1, Endereco1], [Nome2, Endereco2], ...]}"
+        // formato de saída "{[[Nome1, Endereco1], [Nome2, Endereco2], ...]}"
         String conteudo = String.join(", ", infoEmpresas);
         return "{[" + conteudo + "]}";
     }
@@ -1304,7 +1308,6 @@ public class SistemaMyFood {
 
         String estado = pedido.getEstado();
 
-        // Já está pronto -> erro
         if (estado.equals("pronto")) {
             throw new PedidoJaLiberadoException();
         }
@@ -1406,6 +1409,7 @@ public class SistemaMyFood {
         throw new NaoExistePedidoParaEntregarException();
     }
 
+    //Cria um objeto de entrega, e muda o estado do pedido para "entregando".
     public int criarEntrega(int pedidoId, int entregadorId, String destino){
 
 
@@ -1480,7 +1484,7 @@ public class SistemaMyFood {
             }
         }
 
-        // -------Entregador existe e esta livre, comecamos a criar a entrega --------------
+        // -------Entregador existe e esta livre, começa a criar a entrega --------------
 
         // Procura o endereco do cliente que realizou o pedido nas informações
         // do proprio pedido
@@ -1497,7 +1501,7 @@ public class SistemaMyFood {
             throw new UsuarioNaoEncontradoException();
         }
 
-        //Se destino for Null será usado o do cliente
+        //Se destino for Null será usado o destino padrão do cliente
         if(destino == null ){
             destino = cliente.getEndereco();
         }
@@ -1525,6 +1529,7 @@ public class SistemaMyFood {
         return nova.getId();
     }
 
+    //obtém os dados de uma entrega pelo id
     public String getEntrega(int id, String atributo){
 
         if(atributo == null || atributo.trim().isEmpty()){
@@ -1550,6 +1555,7 @@ public class SistemaMyFood {
 
     }
 
+    //retorna o id da entrega a qual pertece o pedido informado pelo id
     public int getIdEntrega(int pedidoId){
 
         // Buscar entrega pelo ID do pedido
@@ -1568,6 +1574,7 @@ public class SistemaMyFood {
         return entregaEncontrada.getId();
     }
 
+    //Muda o estado do pedido para entregue.
     public void entregar(int entregaId){
 
         // Buscar entrega pelo ID do pedido

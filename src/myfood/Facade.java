@@ -119,12 +119,14 @@ public class Facade {
         return sistema.criarEmpresa(tipoEmpresa, dono, nome, endereco, abre, fecha, tipoMercado);
     }
 
+    //altera o horario de funcionamento de mercado
     public void alterarFuncionamento(int mercado, String abre, String fecha){
         sistema.alterarFuncionamento(mercado, abre, fecha);
     }
 
     // ---------------------------- testes 6_1.txt e 6_2.txt -----------------------//
 
+    //criar empresa do tipo farmacia
     public int criarEmpresa(String tipoEmpresa, int dono, String nome, String endereco, Boolean aberto24Horas, int numeroFuncionarios){
         return sistema.criarEmpresa(tipoEmpresa,dono, nome, endereco, aberto24Horas, numeroFuncionarios);
     }
@@ -138,40 +140,49 @@ public class Facade {
         sistema.criarUsuario(entregador);
     }
 
+    //cadastra o entregador em uma empresa
     public void cadastrarEntregador(int empresa, int entregador){
         sistema.cadastrarEntregador(empresa, entregador);
     }
 
+    //Retorna todos os emails dos entregadores que estão alocados em uma empresa.
     public String getEntregadores(int idEmpresa){
         return sistema.getEntregadores(idEmpresa);
     }
 
+    //Retorna os nomes e endereços de todas as empresas a qual o entregador trabalha .
     public String getEmpresas(int idEntregador){
         return sistema.getEmpresas(idEntregador);
     }
 
     // ---------------------------- testes 8_1.txt e 8_2.txt -----------------------//
 
+    //muda o estado do pedido para "pronto".
     public void liberarPedido(int numero){
         sistema.liberarPedido(numero);
     }
 
+    //Retorna o pedido mais antigo que esteja pronto, e que pertenca a uma empresa a qual o entregador trabalha. Pedidos de Farmacia sempre tem prioridade.
     public int obterPedido(int entregador){
         return sistema.obterPedido( entregador);
     }
 
+    //Cria um objeto de entrega, e muda o estado do pedido para "entregando".
     public int criarEntrega(int pedido, int entregador, String destino){
         return sistema.criarEntrega( pedido, entregador, destino);
     }
 
+    //obtém os dados de uma entrega pelo id
     public String getEntrega(int id, String atributo){
         return sistema.getEntrega(id, atributo);
     }
 
+    //retorna o id da entrega a qual pertece o pedido informado pelo id
     public int getIdEntrega(int pedido){
         return sistema.getIdEntrega( pedido);
     }
 
+    //Muda o estado do pedido para entregue.
     public void entregar(int entrega){
         sistema.entregar( entrega);
     }
