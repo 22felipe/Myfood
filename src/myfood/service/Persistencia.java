@@ -52,7 +52,7 @@ public class Persistencia {
     }
 
     public static List<Entregas> carregarEntregas() {
-        return (List<Entregas>) carregarObjeto(ARQUIVO_PEDIDOS);
+        return (List<Entregas>) carregarObjeto(ARQUIVO_Entregas);
     }
 
     private static Object carregarObjeto(String arquivo) {
