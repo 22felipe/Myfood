@@ -8,6 +8,7 @@ import java.util.List;
 
 import myfood.models.Pedidos;
 import myfood.models.empresas.Empresa;
+import myfood.models.entregas.Entregas;
 import myfood.models.usuarios.Usuario;
 
 public class Persistencia {
@@ -15,12 +16,14 @@ public class Persistencia {
     private static final String ARQUIVO_USUARIOS = "usuarios.xml";
     private static final String ARQUIVO_EMPRESAS = "empresas.xml";
     private static final String ARQUIVO_PEDIDOS = "pedidos.xml";
+    private static final String ARQUIVO_Entregas = "entregas.xml";
 
     // ---------- SALVAR ----------
-    public static void salvar(List<Usuario> usuarios, List<Empresa> empresas, List<Pedidos> pedidos) {
+    public static void salvar(List<Usuario> usuarios, List<Empresa> empresas, List<Pedidos> pedidos, List<Entregas> entregas) {
         salvarObjeto(usuarios, ARQUIVO_USUARIOS);
         salvarObjeto(empresas, ARQUIVO_EMPRESAS);
         salvarObjeto(pedidos, ARQUIVO_PEDIDOS);
+        salvarObjeto(entregas, ARQUIVO_Entregas);
     }
 
     private static void salvarObjeto(Object obj, String arquivo) {
@@ -46,6 +49,10 @@ public class Persistencia {
     @SuppressWarnings("unchecked")
     public static List<Pedidos> carregarPedidos() {
         return (List<Pedidos>) carregarObjeto(ARQUIVO_PEDIDOS);
+    }
+
+    public static List<Entregas> carregarEntregas() {
+        return (List<Entregas>) carregarObjeto(ARQUIVO_PEDIDOS);
     }
 
     private static Object carregarObjeto(String arquivo) {

@@ -7,6 +7,7 @@ import myfood.models.empresas.Empresa;
 import myfood.models.empresas.Farmacia;
 import myfood.models.empresas.Mercado;
 import myfood.models.empresas.Restaurante;
+import myfood.models.entregas.Entregas;
 import myfood.models.usuarios.DonoDeEmpresa;
 import myfood.models.usuarios.Entregador;
 import myfood.models.usuarios.Usuario;
@@ -21,6 +22,7 @@ public class SistemaMyFood {
     private List<Usuario> usuarios;
     private List<Empresa> empresas = new ArrayList<>();
     private List<Pedidos> pedidos = new ArrayList<>();
+    private List<Entregas> entregas = new ArrayList<>();
 
     //Metodo para iniciar o sistema e carregar os dados de usuarios e empresas.
     public SistemaMyFood() {
@@ -28,6 +30,7 @@ public class SistemaMyFood {
         this.usuarios = Persistencia.carregarUsuarios();
         this.empresas = Persistencia.carregarEmpresas();
         this.pedidos = Persistencia.carregarPedidos();
+        this.entregas = Persistencia.carregarEntregas();
 
         // Reconectar empresas aos donos
         for (Usuario u : usuarios) {
@@ -44,7 +47,7 @@ public class SistemaMyFood {
 
     //Metodo para o encerrarSistema e salvar os dados
     public void encerrarSistema() {
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
     }
 
     //apaga os dados dos usuario
@@ -52,6 +55,7 @@ public class SistemaMyFood {
         usuarios.clear();
         empresas.clear();
         pedidos.clear();
+        entregas.clear();
     }
 
 
@@ -137,7 +141,7 @@ public class SistemaMyFood {
         usuarios.add(usuario);
 
         //Salvar novo usuario
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
 
     }
 
@@ -222,7 +226,7 @@ public class SistemaMyFood {
 
         ((DonoDeEmpresa) dono).adicionarEmpresa(nova);
 
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
 
         return nova.getId();
     }
@@ -411,7 +415,7 @@ public class SistemaMyFood {
         empresa.adicionarProduto(novoProduto);
 
         //Salvar persistência (após adicionar o produto)
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
 
         return novoProduto.getId();
     }
@@ -529,7 +533,7 @@ public class SistemaMyFood {
         produtoParaEditar.setCategoria(categoria);
 
         //Persistência
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
 
     }
 
@@ -617,7 +621,7 @@ public class SistemaMyFood {
         Pedidos novoPedido = new Pedidos(cliente.getNome(), empresa.getNome(), clienteId, empresaId);
         pedidos.add(novoPedido);
 
-        Persistencia.salvar(usuarios, empresas, pedidos); // Salvar novo pedido
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas); // Salvar novo pedido
 
         return novoPedido.getId();
 
@@ -682,7 +686,7 @@ public class SistemaMyFood {
         // Adicionar o Produto
         pedido.adicionarProduto(produtoAAcionar);
 
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
 
     }
 
@@ -810,7 +814,7 @@ public class SistemaMyFood {
         pedido.setValorTotal(pedido.getValorTotal() - produtoAremover.getValor());
 
         // Salvar estado
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
 
 
     }
@@ -973,7 +977,7 @@ public class SistemaMyFood {
 
         ((DonoDeEmpresa) dono).adicionarEmpresa(nova);
 
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
 
         return nova.getId();
     }
@@ -1048,7 +1052,7 @@ public class SistemaMyFood {
 
 
         //salva as informacoes
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
 
 
     }
@@ -1057,7 +1061,8 @@ public class SistemaMyFood {
     // ---------------------------- testes 6_1.txt e 6_2.txt -----------------------//
 
     //criar empresa para o tipo "farmacia"
-    public int criarEmpresa(String tipoEmpresa, int donoId, String nomeEmpresa,String endereco, Boolean aberto24Horas, int numeroFuncionarios) {
+    public int criarEmpresa(String tipoEmpresa, int donoId, String nomeEmpresa,String endereco,
+                            Boolean aberto24Horas, int numeroFuncionarios) {
 
         if(numeroFuncionarios <= 0) {
             throw new NumeroDeFuncionariosInvalidoException();
@@ -1127,7 +1132,7 @@ public class SistemaMyFood {
 
         ((DonoDeEmpresa) dono).adicionarEmpresa(nova);
 
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
 
         return nova.getId();
 
@@ -1183,10 +1188,10 @@ public class SistemaMyFood {
         entregador.adicionarEmpresa(empresaId);
 
         // Persistir as alterações
-        Persistencia.salvar(usuarios, empresas, pedidos);
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
     }
 
-    public String getEntregadores(int idEmpresa) { // MUDANÇA: Retorna String
+    public String getEntregadores(int idEmpresa) {
 
         // Buscar a Empresa pelo ID
         Empresa empresa = null;
@@ -1230,7 +1235,7 @@ public class SistemaMyFood {
         return "{[" + conteudo + "]}";
     }
 
-    public String getEmpresas(int idEntregador) { // MUDANÇA: Retorna String
+    public String getEmpresas(int idEntregador) {
 
         // Buscar o Usuário (Entregador) pelo ID
         Usuario user = null;
@@ -1275,6 +1280,334 @@ public class SistemaMyFood {
         String conteudo = String.join(", ", infoEmpresas);
         return "{[" + conteudo + "]}";
     }
+
+
+    // ---------------------------- testes 8_1.txt e 8_2.txt -----------------------//
+
+    //muda o estado do pedido para "pronto".
+    public void liberarPedido(int numero) {
+
+        Pedidos pedido = null;
+
+        // Buscar pedido pelo ID
+        for (Pedidos p : pedidos) {
+            if (p.getId() == numero) {
+                pedido = p;
+                break;
+            }
+        }
+
+        // Se não encontrou, lança exceção
+        if (pedido == null) {
+            throw new PedidoNaoEncontradoException();
+        }
+
+        String estado = pedido.getEstado();
+
+        // Já está pronto -> erro
+        if (estado.equals("pronto")) {
+            throw new PedidoJaLiberadoException();
+        }
+
+        // Só pode liberar se estiver "preparando"
+        if (!estado.equals("preparando")) {
+            throw new NaoEhPossivelPedidoNaoEstaSendoPreparadoExpetion();
+        }
+
+        // Alterar o estado para "pronto"
+        pedido.setEstado("pronto");
+    }
+
+    //Retorna o pedido mais antigo que esteja pronto, e que pertenca a uma empresa a qual o entregador trabalha. Pedidos de Farmacia sempre tem prioridade.
+    public int obterPedido(int entregadorId) {
+
+        // Buscar o Usuário (Entregador) pelo ID
+        Usuario user = null;
+        for (Usuario u : usuarios) {
+            if (u.getId() == entregadorId) {
+                user = u;
+                break;
+            }
+        }
+
+        // Validação de Usuário
+        if (user == null) {
+            throw new UsuarioNaoEncontradoException();
+        }
+
+        // Validação de Tipo de Usuário (Deve ser um Entregador)
+        if (!(user instanceof Entregador)) {
+            throw new UsuarioNaoEhUmEntregadorException();
+        }
+
+        Entregador entregador = (Entregador) user;
+
+        // Empresas nas quais o entregador está vinculado (IDs)
+        List<Integer> idsEmpresasDoEntregador = entregador.getEmpresas();
+
+        if (idsEmpresasDoEntregador == null || idsEmpresasDoEntregador.isEmpty()) {
+            throw new EntregadorNaoEstaEmNenhumaEmpresaException();
+        }
+
+        // Filtrar pedidos com estado "pronto" que pertençam às empresas do entregador
+        List<Pedidos> prontos = new ArrayList<>();
+        for (Pedidos p : pedidos) {
+            if (p.getEstado() != null && p.getEstado().equalsIgnoreCase("pronto")) {
+                if (idsEmpresasDoEntregador.contains(p.getEmpresaId())) {
+                    prontos.add(p);
+                }
+            }
+        }
+
+        // Separar pedidos de farmácia e outros (prioridade para farmácia)
+        List<Pedidos> farmacia = new ArrayList<>();
+        List<Pedidos> outros = new ArrayList<>();
+
+        for (Pedidos p : prontos) {
+
+            // Encontrar empresa dona do pedido percorrendo a lista de empresas
+            Empresa empDoPedido = null;
+            for (Empresa e : empresas) {
+                if (e.getId() == p.getEmpresaId()) {
+                    empDoPedido = e;
+                    break;
+                }
+            }
+
+            // Se por algum motivo a empresa não existir no sistema, ignora esse pedido
+            if (empDoPedido == null) continue;
+
+            // Usa getTipoEmpresa() para identificar farmácia
+            if (empDoPedido.getTipoEmpresa() != null && empDoPedido.getTipoEmpresa().equalsIgnoreCase("farmacia")) {
+                farmacia.add(p);
+            } else {
+                outros.add(p);
+            }
+        }
+
+        // Ordenar cada grupo por id (menor id = mais antigo)
+        //cria um organizador de id
+        Comparator<Pedidos> comp = Comparator.comparingInt(Pedidos::getId);
+
+        //aplica o organizador nas listas
+        farmacia.sort(comp);
+        outros.sort(comp);
+
+        // retorna o pedido mais antigo de farmacia
+        // se n existe pedido de farmacia, retorna o de outro tipo de empresa
+        if (!farmacia.isEmpty()) {
+            return farmacia.get(0).getId();
+        }
+        if (!outros.isEmpty()) {
+            return outros.get(0).getId();
+        }
+
+        // Nenhum pedido pronto disponível para esse entregador:
+        throw new NaoExistePedidoParaEntregarException();
+    }
+
+    public int criarEntrega(int pedidoId, int entregadorId, String destino){
+
+
+        // --------- checa se o pedido existe e se esta pronto para entrega ---------//
+
+        Pedidos pedido = null;
+
+        // Buscar pedido pelo ID
+        for (Pedidos p : pedidos) {
+            if (p.getId() == pedidoId) {
+                pedido = p;
+                break;
+            }
+        }
+
+        // Se não encontrou, lança exceção
+        if (pedido == null) {
+            throw new PedidoNaoEncontradoException();
+        }
+
+        String estado = pedido.getEstado();
+
+        // pedido ainda n esta pronto
+        if (!(estado.equals("pronto"))) {
+            throw new PedidoNaoEstaProntoException();
+        }
+
+        // ---------------------Checa se o usuario existe e eh um entregador --------------------------//
+
+        // Buscar o Usuário (Entregador) pelo ID
+        Usuario user = null;
+        for (Usuario u : usuarios) {
+            if (u.getId() == entregadorId) {
+                user = u;
+                break;
+            }
+        }
+
+        // Validação de Usuário
+        if (user == null) {
+            throw new UsuarioNaoEncontradoException();
+        }
+
+        // Validação de Tipo de Usuário (Deve ser um Entregador)
+        if (!(user instanceof Entregador)) {
+            throw new NaoEhUmEntregadorValidoException();
+        }
+
+        //Entregador achado
+        Entregador entregador = (Entregador) user;
+
+
+        // -----------------Checa se o Entregador livre para a entrega --------------
+
+        for (Entregas e : entregas) {
+
+            if (e.getEntregador() == entregadorId) {
+
+                // achar pedido correspondente
+                Pedidos pRelacionado = null;
+                for (Pedidos px : pedidos) {
+                    if (px.getId() == e.getPedido()) {
+                        pRelacionado = px;
+                        break;
+                    }
+                }
+
+                if (pRelacionado != null &&
+                        pRelacionado.getEstado().equalsIgnoreCase("entregando")) {
+                    throw new EntregadorAindaEmEntregaException();
+                }
+            }
+        }
+
+        // -------Entregador existe e esta livre, comecamos a criar a entrega --------------
+
+        // Procura o endereco do cliente que realizou o pedido nas informações
+        // do proprio pedido
+
+        //procura o cliente do pedido
+        Usuario cliente = null;
+        for (Usuario usu : usuarios) {
+            if (usu.getId() == pedido.getClienteId()) {
+                cliente = usu;
+                break;
+            }
+        }
+        if (cliente == null) {
+            throw new UsuarioNaoEncontradoException();
+        }
+
+        //Se destino for Null será usado o do cliente
+        if(destino == null ){
+            destino = cliente.getEndereco();
+        }
+
+        //Nao eh dito oq fazer se o destino for vazio, considerei como um erro.
+        if(destino.trim().isEmpty()){ throw new EnderecoInvalidoException();}
+
+        // criamos a entrega
+        Entregas nova = new Entregas(pedidoId, entregadorId, destino);
+
+        //Fora do contructor: nomeCliente, nomeEmpresa, produtos
+        // preencher campos extras
+        nova.setNomeCliente(cliente.getNome());
+        nova.setNomeEmpresa(pedido.getEmpresa());
+        nova.setNomeEntregador(entregador.getNome());
+        nova.setProdutos(new ArrayList<>(pedido.getProdutos()));
+
+
+        // Salvar
+        entregas.add(nova);
+        // mudar estado do pedido
+        pedido.setEstado("entregando");
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
+
+        return nova.getId();
+    }
+
+    public String getEntrega(int id, String atributo){
+
+        if(atributo == null || atributo.trim().isEmpty()){
+            throw new AtributoInvalidoException();
+        }
+
+        // Buscar entrega pelo ID
+        Entregas entregaEncontrada = null;
+        for (Entregas e : entregas) {
+            if (e.getId() == id) {
+                entregaEncontrada = e;
+                break;
+            }
+        }
+
+        if (entregaEncontrada == null) {
+            throw new EntregaNaoEncontradaException();
+        }
+
+        // Retorna o atributo ou lança AtributoNaoExisteException
+        return entregaEncontrada.getAtributo(atributo);
+
+
+    }
+
+    public int getIdEntrega(int pedidoId){
+
+        // Buscar entrega pelo ID do pedido
+        Entregas entregaEncontrada = null;
+        for (Entregas e : entregas) {
+            if (e.getPedido() == pedidoId) {
+                entregaEncontrada = e;
+                break;
+            }
+        }
+
+        if (entregaEncontrada == null) {
+            throw new NaoExisteEntregaComEsseIdException();
+        }
+
+        return entregaEncontrada.getId();
+    }
+
+    public void entregar(int entregaId){
+
+        // Buscar entrega pelo ID do pedido
+        Entregas entregaEncontrada = null;
+        for (Entregas e : entregas) {
+            if (e.getId() == entregaId) {
+                entregaEncontrada = e;
+                break;
+            }
+        }
+
+        if (entregaEncontrada == null) {
+            throw new NaoExisteNadaParaSerEntregueException();
+        }
+
+        // Buscar o pedido correspondente
+        Pedidos pedido = null;
+        for (Pedidos p : pedidos) {
+            if (p.getId() == entregaEncontrada.getPedido()) {
+                pedido = p;
+                break;
+            }
+        }
+
+        if (pedido == null) {
+            throw new NaoExistePedidoParaEntregarException();
+        }
+
+        // Mudar estado do pedido para "entregue"
+        pedido.setEstado("entregue");
+
+        // Persistência
+        Persistencia.salvar(usuarios, empresas, pedidos, entregas);
+
+    }
+
+
+
+
+
 
 
 

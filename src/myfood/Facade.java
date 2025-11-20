@@ -150,5 +150,32 @@ public class Facade {
         return sistema.getEmpresas(idEntregador);
     }
 
+    // ---------------------------- testes 8_1.txt e 8_2.txt -----------------------//
+
+    public void liberarPedido(int numero){
+        sistema.liberarPedido(numero);
+    }
+
+    public int obterPedido(int entregador){
+        return sistema.obterPedido( entregador);
+    }
+
+    public int criarEntrega(int pedido, int entregador, String destino){
+        return sistema.criarEntrega( pedido, entregador, destino);
+    }
+
+    public String getEntrega(int id, String atributo){
+        return sistema.getEntrega(id, atributo);
+    }
+
+    public int getIdEntrega(int pedido){
+        return sistema.getIdEntrega( pedido);
+    }
+
+    public void entregar(int entrega){
+        sistema.entregar( entrega);
+    }
+
+
 
 }
